@@ -24,12 +24,12 @@
 --- 
 
 ## ToDo 
-- [] Converter o resultado o clang-tidy-review para o tipo da lista `comments` do processor
-- [] Analisar como formatar o `diff` no formato certo com o `unidiff`
-- [] Adicionar alguma validação nos campos do .config-json
-- [] Trocar o comando do clang-tidy para utilizar o run-clang-tidy.py
-- [] Analisar se há dependências 
-- [] Criar unitários usando o pytest
+- [ ] Converter o resultado o clang-tidy-review para o tipo da lista `comments` do processor
+- [ ] Analisar como formatar o `diff` no formato certo com o `unidiff`
+- [ ] Adicionar alguma validação nos campos do .config-json
+- [ ] Trocar o comando do clang-tidy para utilizar o run-clang-tidy.py
+- [ ] Analisar se há dependências 
+- [ ] Criar unitários usando o pytest
 - [X] Adicionar as funções úteis do clang-tidy-review
 
 ---
