@@ -8,18 +8,13 @@ import itertools
 import json
 import os
 from operator import itemgetter
-import pprint
 import pathlib
-import requests
 import subprocess
 import textwrap
-import unidiff
 import yaml
 import contextlib
 import datetime
 import re
-import io
-import zipfile
 
 from typing import List, Optional, TypedDict
 
