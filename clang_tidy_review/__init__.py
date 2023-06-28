@@ -701,18 +701,6 @@ def get_line_ranges(diff, files):
     return json.dumps(line_filter_json, separators=(",", ":"))
 
 
-def strip_enclosing_quotes(string: str) -> str:
-    """Strip leading/trailing whitespace and remove any enclosing quotes"""
-    stripped = string.strip()
-
-    # Need to check double quotes again in case they're nested inside
-    # single quotes
-    for quote in ['"', "'", '"']:
-        if stripped.startswith(quote) and stripped.endswith(quote):
-            stripped = stripped[1:-1]
-    return stripped
-
-
 def convert_git_lab_changes_to_unidiff(changes: List) -> List[unidiff.PatchSet]:
     """Use this function when the git remote type is equal to git lab.
     It is necessary because the changes format from API git lab is of the type unified
