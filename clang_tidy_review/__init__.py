@@ -15,6 +15,7 @@ import yaml
 import contextlib
 import datetime
 import re
+import unidiff
 
 from typing import List, Optional, TypedDict
 
@@ -596,8 +597,7 @@ def filter_files(diff, include: List[str], exclude: List[str]) -> List:
 
 
 def create_review(
-    # pull_request: PullRequest,
-    diff: str,
+    diff_changes: str,
     build_dir: str,
     clang_tidy_checks: str,
     clang_tidy_binary: str,
@@ -609,7 +609,9 @@ def create_review(
     If no files were changed, or no warnings could be found, None will be returned.
     """
 
-    print(f"\nDiff from GitHub PR:\n{diff}\n")
+    diff = convert_git_lab_changes_to_unidiff(diff_changes)
+
+    print(f"\nDiff:\n{diff}\n")
 
     files = filter_files(diff, include, exclude)
 
@@ -709,3 +711,33 @@ def strip_enclosing_quotes(string: str) -> str:
         if stripped.startswith(quote) and stripped.endswith(quote):
             stripped = stripped[1:-1]
     return stripped
+
+
+def convert_git_lab_changes_to_unidiff(changes: List) -> List[unidiff.PatchSet]:
+    """Use this function when the git remote type is equal to git lab.
+    It is necessary because the changes format from API git lab is of the type unified
+    and it seems unidiff only parse in git diff format
+    """
+
+    if not changes:
+        return []
+
+    all_git_diffs = []
+    for change in changes:
+        git_diff_tmp = [
+            f"diff --git a/{change['old_path']} b/{change['new_path']}",
+            f"index {change['a_mode']}..{change['b_mode']} {change['a_mode']}",
+            f"--- a/{change['old_path']}",
+            f"+++ b/{change['new_path']}",
+            change["diff"],
+        ]
+        all_git_diffs.extend(git_diff_tmp)
+
+    all_git_diffs_str = "\n".join(all_git_diffs)
+    print("[all_git_diffs_str]", all_git_diffs_str)
+
+    formated_diff = [
+        unidiff.PatchSet(str(file))[0] for file in unidiff.PatchSet(all_git_diffs_str)
+    ]
+
+    return formated_diff
