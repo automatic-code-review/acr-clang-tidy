@@ -7,6 +7,7 @@
 ---
 
 ## Arquivo config.json
+O arquivo de configuração para executar corretamente o clang-tidy com as configurações definidas, estão estruturadas no arquivo config-schema.json
 ```json
 {
     "path_output": "clang-tidy-review-output.json",
