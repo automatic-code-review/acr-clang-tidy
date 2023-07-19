@@ -1,7 +1,0 @@
-[
-  {
-    "directory": "/home/eduardo/hello/myprojects/tests-checks-clang-tidy/build",
-    "command": "/usr/bin/g++ -g -o CMakeFiles/tests-checks-clang-tidy.dir/ClassTestReview.cpp.o -c /home/eduardo/hello/myprojects/tests-checks-clang-tidy/ClassTestReview.cpp",
-    "file": "/home/eduardo/hello/myprojects/tests-checks-clang-tidy/ClassTestReview.cpp"
-  }
-]
