@@ -133,7 +133,7 @@ def message_group(title: str):
     try:
         yield
     finally:
-        print("::endgroup::", flush=True)
+        print("::endgroup::\n", flush=True)
 
 
 def make_file_line_lookup(diff):
@@ -564,6 +564,7 @@ def create_review_file(
                 "body": comment_body,
                 "side": "RIGHT",
                 "line": end_line,
+                "start_line": source_line,
             }
         )
         # If this is a multiline comment, we need a couple more bits:
@@ -609,11 +610,13 @@ def create_review(
     If no files were changed, or no warnings could be found, None will be returned.
     """
 
-    diff = convert_git_lab_changes_to_unidiff(diff_changes)
+    with message_group("Converting diff with convert_git_lab_changes_to_unidiff"):
+        diff = convert_git_lab_changes_to_unidiff(diff_changes)
 
     print(f"\nDiff:\n{diff}\n")
 
-    files = filter_files(diff, include, exclude)
+    with message_group("Filtering files with filter_files function"):
+        files = filter_files(diff, include, exclude)
 
     if files == []:
         print("No files to check!")
@@ -621,7 +624,8 @@ def create_review(
 
     print(f"Checking these files: {files}", flush=True)
 
-    line_ranges = get_line_ranges(diff, files)
+    with message_group("Getting line ranges with get_line_ranges function"):
+        line_ranges = get_line_ranges(diff, files)
     if line_ranges == "[]":
         print("No lines added in this PR!")
         return None
@@ -722,7 +726,6 @@ def convert_git_lab_changes_to_unidiff(changes: List) -> List[unidiff.PatchSet]:
         all_git_diffs.extend(git_diff_tmp)
 
     all_git_diffs_str = "\n".join(all_git_diffs)
-    print("[all_git_diffs_str]", all_git_diffs_str)
 
     formated_diff = [
         unidiff.PatchSet(str(file))[0] for file in unidiff.PatchSet(all_git_diffs_str)
