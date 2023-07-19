@@ -1,5 +1,7 @@
-from clang_tidy_review import create_review, convert_git_lab_changes_to_unidiff
-import unidiff
+from clang_tidy_review import create_review
+import hashlib
+
+import requests
 
 
 def review(config):
@@ -23,13 +25,26 @@ def review(config):
         exclude=exclude,
     )
 
-    print(f"[RESULTADO]={result_review}")
-
-    # TODO IMPLEMENTAR EXTENSION
-    #  O OBJETO DE COMENTARIO DEVE POSSUIR O SEGUINTE FORMATO
-    #  {
-    #      "id": "",
-    #      "comment": ""
-    #  }
+    if result_review:
+        for comment in result_review["comments"]:
+            comments.append(
+                {
+                    "id": __generate_md5(comment["body"] + comment["path"]),
+                    "comment": comment["body"],
+                    "position": {
+                        "language": "c++",
+                        "path": comment["path"],
+                        "startInLine": comment["line"],
+                        "endInLine": comment["line"],
+                    },
+                }
+            )
 
     return comments
+
+
+def __generate_md5(string):
+    md5_hash = hashlib.md5()
+    md5_hash.update(string.encode("utf-8"))
+
+    return md5_hash.hexdigest()
