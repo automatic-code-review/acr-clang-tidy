@@ -1,0 +1,131 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "properties": {
+    "path_target": {
+      "type": "string"
+    },
+    "path_output": {
+      "type": "string",
+      "minLength": 1
+    },
+    "title": {
+      "type": "string"
+    },
+    "branch": {
+      "type": "object",
+      "properties": {
+        "target": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "target",
+        "source"
+      ]
+    },
+    "project_id": {
+      "type": "integer"
+    },
+    "merge_request_id": {
+      "type": "integer"
+    },
+    "clang_tidy": {
+      "type": "object",
+      "properties": {
+        "build_dir": {
+          "type": "string",
+          "minLength": 1
+        },
+        "binary_dir": {
+          "type": "string",
+          "minLength": 1
+        },
+        "checks": {
+          "type": "string",
+          "minLength": 1
+        },
+        "config_file": {
+          "type": "string"
+        },
+        "include": {
+          "type": "string",
+          "minLength": 1
+        },
+        "exclude": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "build_dir",
+        "binary_dir",
+        "checks",
+        "include",
+        "exclude"
+      ]
+    },
+    "git_remote_type": {
+      "type": "string"
+    },
+    "merge": {
+      "type": "object",
+      "properties": {
+        "changes": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "diff": {
+                "type": "string"
+              },
+              "new_path": {
+                "type": "string"
+              },
+              "old_path": {
+                "type": "string"
+              },
+              "a_mode": {
+                "type": "string"
+              },
+              "b_mode": {
+                "type": "string"
+              },
+              "new_file": {
+                "type": "boolean"
+              },
+              "renamed_file": {
+                "type": "boolean"
+              },
+              "deleted_file": {
+                "type": "boolean"
+              }
+            },
+            "required": [
+              "diff",
+              "new_path",
+              "old_path",
+              "a_mode",
+              "b_mode",
+              "new_file",
+              "renamed_file",
+              "deleted_file"
+            ]
+          }
+        }
+      }
+    }
+  },
+  "required": [
+    "path_output",
+    "title",
+    "branch",
+    "project_id",
+    "merge_request_id",
+    "clang_tidy",
+    "git_remote_type",
+    "merge"
+  ]
+}
