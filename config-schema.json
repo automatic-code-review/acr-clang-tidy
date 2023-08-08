@@ -9,29 +9,9 @@
       "type": "string",
       "minLength": 1
     },
-    "title": {
-      "type": "string"
-    },
-    "branch": {
-      "type": "object",
-      "properties": {
-        "target": {
-          "type": "string"
-        },
-        "source": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "target",
-        "source"
-      ]
-    },
-    "project_id": {
-      "type": "integer"
-    },
-    "merge_request_id": {
-      "type": "integer"
+    "path_source": {
+      "type": "string",
+      "minLength": 1
     },
     "clang_tidy": {
       "type": "object",
@@ -67,12 +47,36 @@
         "exclude"
       ]
     },
-    "git_remote_type": {
-      "type": "string"
-    },
     "merge": {
       "type": "object",
+      "project_id": {
+        "type": "integer"
+      },
+      "merge_request_id": {
+        "type": "integer"
+      },
+      "git_type": {
+        "type": "string"
+      },
       "properties": {
+        "title": {
+          "type": "string"
+        },
+        "branch": {
+          "type": "object",
+          "properties": {
+            "target": {
+              "type": "string"
+            },
+            "source": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "target",
+            "source"
+          ]
+        },
         "changes": {
           "type": "array",
           "items": {
@@ -120,12 +124,8 @@
   },
   "required": [
     "path_output",
-    "title",
-    "branch",
-    "project_id",
-    "merge_request_id",
     "clang_tidy",
-    "git_remote_type",
-    "merge"
+    "merge",
+    "path_source"
   ]
 }

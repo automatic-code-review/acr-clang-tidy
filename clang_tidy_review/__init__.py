@@ -43,7 +43,13 @@ class PRReview(TypedDict):
 
 
 def build_clang_tidy_warnings(
-    line_filter, build_dir, clang_tidy_checks, clang_tidy_binary, config_file, files
+    line_filter,
+    build_dir,
+    clang_tidy_checks,
+    clang_tidy_binary,
+    config_file,
+    files,
+    path_source,
 ) -> None:
     """Run clang-tidy on the given files and save output into FIXES_FILE"""
 
@@ -51,13 +57,18 @@ def build_clang_tidy_warnings(
 
     print(f"Using config: {config}")
 
-    command = f"{clang_tidy_binary} -p={build_dir} {config} -line-filter={line_filter} {files} --export-fixes={FIXES_FILE}"
+    command = f"{clang_tidy_binary} -p={build_dir} {config} -line-filter={line_filter} {files} --export-fixes={os.path.join(path_source, FIXES_FILE)}"
 
     start = datetime.datetime.now()
     try:
         with message_group(f"Running:\n\t{command}"):
             subprocess.run(
-                command, capture_output=True, shell=True, check=True, encoding="utf-8"
+                command,
+                capture_output=True,
+                shell=True,
+                check=True,
+                encoding="utf-8",
+                cwd=path_source,
             )
     except subprocess.CalledProcessError as e:
         print(
@@ -118,10 +129,10 @@ def config_file_or_checks(
     return "--config"
 
 
-def load_clang_tidy_warnings():
+def load_clang_tidy_warnings(path_source):
     """Read clang-tidy warnings from FIXES_FILE. Can be produced by build_clang_tidy_warnings"""
     try:
-        with open(FIXES_FILE, "r") as fixes_file:
+        with open(os.path.join(path_source, FIXES_FILE), "r") as fixes_file:
             return yaml.safe_load(fixes_file)
     except FileNotFoundError:
         return {}
@@ -129,11 +140,11 @@ def load_clang_tidy_warnings():
 
 @contextlib.contextmanager
 def message_group(title: str):
-    print(f"::group::{title}", flush=True)
+    print(f"::begin_group::acr_clang_tidy::{title}:", flush=True)
     try:
         yield
     finally:
-        print("::endgroup::\n", flush=True)
+        print("::end_group::acr_clang_tidy::\n", flush=True)
 
 
 def make_file_line_lookup(diff):
@@ -554,7 +565,7 @@ def create_review_file(
 
         if rel_path not in diff_lookup or end_line not in diff_lookup[rel_path]:
             print(
-                f"WARNING: Skipping comment for file '{rel_path}' not in PR changeset. Comment body is:\n{comment_body}"
+                f"WARNING: Skipping comment for file '{rel_path}' not in Diff changeset. Comment body is:\n{comment_body}"
             )
             continue
 
@@ -602,6 +613,7 @@ def create_review(
     build_dir: str,
     clang_tidy_checks: str,
     clang_tidy_binary: str,
+    path_source: str,
     config_file: str,
     include: List[str],
     exclude: List[str],
@@ -611,9 +623,7 @@ def create_review(
     """
 
     with message_group("Converting diff with convert_git_lab_changes_to_unidiff"):
-        diff = convert_git_lab_changes_to_unidiff(diff_changes)
-
-    print(f"\nDiff:\n{diff}\n")
+        diff = convert_git_lab_changes_to_unidiff(diff_changes, path_source)
 
     with message_group("Filtering files with filter_files function"):
         files = filter_files(diff, include, exclude)
@@ -627,10 +637,8 @@ def create_review(
     with message_group("Getting line ranges with get_line_ranges function"):
         line_ranges = get_line_ranges(diff, files)
     if line_ranges == "[]":
-        print("No lines added in this PR!")
+        print("No lines added in this Diff!")
         return None
-
-    print(f"Line filter for clang-tidy:\n{line_ranges}\n")
 
     # Run clang-tidy with the configured parameters and produce the CLANG_TIDY_FIXES file
     build_clang_tidy_warnings(
@@ -640,24 +648,38 @@ def create_review(
         clang_tidy_binary,
         config_file,
         '"' + '" "'.join(files) + '"',
+        path_source,
     )
 
     # Read and parse the CLANG_TIDY_FIXES file
-    clang_tidy_warnings = load_clang_tidy_warnings()
+    clang_tidy_warnings = load_clang_tidy_warnings(path_source)
 
-    print("clang-tidy had the following warnings:\n", clang_tidy_warnings, flush=True)
-
-    diff_lookup = make_file_line_lookup(diff)
-    offset_lookup = make_file_offset_lookup(files)
-
-    with message_group("Creating review from warnings"):
-        review = create_review_file(
-            clang_tidy_warnings, diff_lookup, offset_lookup, build_dir
+    if clang_tidy_warnings:
+        print(
+            "clang-tidy had the following warnings:\n", clang_tidy_warnings, flush=True
         )
-        with open(REVIEW_FILE, "w") as review_file:
-            json.dump(review, review_file)
 
-        return review
+        diff_lookup = make_file_line_lookup(diff)
+        offset_lookup = make_file_offset_lookup(files)
+
+        with message_group("Creating review from warnings"):
+            review = create_review_file(
+                clang_tidy_warnings, diff_lookup, offset_lookup, build_dir
+            )
+            with open(REVIEW_FILE, "w") as review_file:
+                json.dump(review, review_file)
+
+                try:
+                    os.remove(os.path.join(path_source, FIXES_FILE))
+                except OSError as e:
+                    print(f"Erro ao remover o arquivo: {e}")
+
+            return review
+    print(
+        "NOTE: Clang-tidy found NO warnings in these analyzed files:\n",
+        diff,
+        flush=True,
+    )
 
 
 def load_review() -> Optional[PRReview]:
@@ -705,7 +727,9 @@ def get_line_ranges(diff, files):
     return json.dumps(line_filter_json, separators=(",", ":"))
 
 
-def convert_git_lab_changes_to_unidiff(changes: List) -> List[unidiff.PatchSet]:
+def convert_git_lab_changes_to_unidiff(
+    changes: List, path_source: str
+) -> List[unidiff.PatchSet]:
     """Use this function when the git remote type is equal to git lab.
     It is necessary because the changes format from API git lab is of the type unified
     and it seems unidiff only parse in git diff format
@@ -717,10 +741,10 @@ def convert_git_lab_changes_to_unidiff(changes: List) -> List[unidiff.PatchSet]:
     all_git_diffs = []
     for change in changes:
         git_diff_tmp = [
-            f"diff --git a/{change['old_path']} b/{change['new_path']}",
+            f"diff --git a/{path_source}/{change['old_path']} b/{path_source}/{change['new_path']}",
             f"index {change['a_mode']}..{change['b_mode']} {change['a_mode']}",
-            f"--- a/{change['old_path']}",
-            f"+++ b/{change['new_path']}",
+            f"--- a/{path_source}/{change['old_path']}",
+            f"+++ b/{path_source}/{change['new_path']}",
             change["diff"],
         ]
         all_git_diffs.extend(git_diff_tmp)
