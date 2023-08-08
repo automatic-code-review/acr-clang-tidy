@@ -1,8 +1,6 @@
 from clang_tidy_review import create_review
 import hashlib
 
-import requests
-
 
 def review(config):
     comments = []
@@ -14,12 +12,14 @@ def review(config):
     config_file = config["clang_tidy"]["config_file"]
     include = config["clang_tidy"]["include"]
     exclude = config["clang_tidy"]["exclude"]
+    path_source = config["path_source"]
 
     result_review = create_review(
         diff_changes,
         build_dir,
         clang_tidy_checks,
         clang_tidy_binary,
+        path_source,
         config_file=config_file,
         include=include,
         exclude=exclude,
@@ -33,7 +33,7 @@ def review(config):
                     "comment": comment["body"],
                     "position": {
                         "language": "c++",
-                        "path": comment["path"],
+                        "path": comment["path"].replace(path_source, ""),
                         "startInLine": comment["line"],
                         "endInLine": comment["line"],
                     },

@@ -25,9 +25,11 @@ def validate_config(config, schema):
         if "minLength" in error.validator:
             field_name = error.path[-1]
             new_error_message = f"O campo '{field_name}' não pode estar vazio."
-            print(f"Erro validando config.json: {new_error_message}")
+            print(f"Erro validando config.json [ACR-CLANG-TIDY]: {new_error_message}")
         else:
-            print(f"Erro validando config.json: {error.path} {error.message}")
+            print(
+                f"Erro validando config.json [ACR-CLANG-TIDY]: {error.path} {error.message}"
+            )
         sys.exit(1)
 
 
