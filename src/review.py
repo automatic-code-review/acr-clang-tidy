@@ -33,7 +33,9 @@ def review(config):
                     "comment": comment["body"],
                     "position": {
                         "language": "c++",
-                        "path": comment["path"].replace(path_source, ""),
+                        "path": __format_from_path_source_to_acr_processor(
+                            path_source, comment["path"]
+                        ),
                         "startInLine": comment["line"],
                         "endInLine": comment["line"],
                     },
@@ -41,6 +43,14 @@ def review(config):
             )
 
     return comments
+
+
+def __format_from_path_source_to_acr_processor(path_source: str, path: str):
+    result = path.replace(path_source, "")
+    if result.startswith("/"):
+        result = path[1:]
+
+    return result
 
 
 def __generate_md5(string):
