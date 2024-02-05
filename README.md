@@ -42,6 +42,7 @@ O arquivo de configuração para executar corretamente o clang-tidy com as confi
 - [ ] Trocar o comando do clang-tidy para utilizar o run-clang-tidy.py
 - [ ] Analisar se há dependências 
 - [ ] Criar unitários usando o pytest
+- [ ] Rever as dependências do requirements.txt
 - [X] Testar com diferentes diffs do gitlab e analisar se vai ser necessário adicionar mais saídas na função `convert_git_lab_changes_to_unidiff`. Exemplo quando cria arquivo novo, renomeado etc
 - [X] Converter o resultado o clang-tidy-review para o tipo da lista `comments` do processor
 - [X] Adicionar alguma validação nos campos do .config-json
