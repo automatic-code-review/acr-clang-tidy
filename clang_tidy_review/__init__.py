@@ -474,9 +474,7 @@ def format_notes(notes, offset_lookup, path_root):
             resolved_path, offset_lookup[resolved_path][line_num]
         )
 
-        path = str(try_relative(resolved_path)).replace(path_root, "")
-        if path.startswith("/"):
-            path = path[1:]
+        path = __format_from_path_source_to_acr_processor(path_root, str(try_relative(resolved_path)))
         message = f"**{path}:{line_num}:** {note['Message']}"
         code = format_ordinary_line(source_line, line_offset)
         code_blocks += f"{message}\n{code}"
@@ -527,6 +525,17 @@ def make_comment_from_diagnostic(
     )
 
     return comment_body, end_line + 1
+
+
+def __format_from_path_source_to_acr_processor(path_source: str, path: str):
+    print(f'acr-clang-tidy Format path source [PATH_SOURCE] {path_source} - [PATH_CLANG] {path}')
+    result = path.replace(path_source, "")
+    if result.startswith("/"):
+        result = result[1:]
+
+    print(f'acr-clang-tidy Format path source [PATH_OUTPUT] {result}')
+
+    return result
 
 
 def create_review_file(
