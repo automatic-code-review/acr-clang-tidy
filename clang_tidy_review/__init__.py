@@ -3,21 +3,21 @@
 # SPDX-License-Identifier: MIT
 # See LICENSE for more information
 
+import contextlib
+import datetime
 import fnmatch
 import itertools
 import json
 import os
-from operator import itemgetter
 import pathlib
+import re
 import subprocess
 import textwrap
-import yaml
-import contextlib
-import datetime
-import re
-import unidiff
-
+from operator import itemgetter
 from typing import List, Optional, TypedDict
+
+import unidiff
+import yaml
 
 DIFF_HEADER_LINE_LENGTH = 5
 FIXES_FILE = "clang_tidy_review.yaml"
@@ -43,13 +43,13 @@ class PRReview(TypedDict):
 
 
 def build_clang_tidy_warnings(
-    line_filter,
-    build_dir,
-    clang_tidy_checks,
-    clang_tidy_binary,
-    config_file,
-    files,
-    path_source,
+        line_filter,
+        build_dir,
+        clang_tidy_checks,
+        clang_tidy_binary,
+        config_file,
+        files,
+        path_source,
 ) -> None:
     """Run clang-tidy on the given files and save output into FIXES_FILE"""
 
@@ -102,7 +102,7 @@ def clang_tidy_version(clang_tidy_binary: str):
 
 
 def config_file_or_checks(
-    clang_tidy_binary: str, clang_tidy_checks: str, config_file: str
+        clang_tidy_binary: str, clang_tidy_checks: str, config_file: str
 ):
     version = clang_tidy_version(clang_tidy_binary)
 
@@ -162,7 +162,7 @@ def make_file_line_lookup(diff):
                     continue
                 if not line.is_removed:
                     lookup[filename][line.target_line_no] = (
-                        line.diff_line_no - DIFF_HEADER_LINE_LENGTH
+                            line.diff_line_no - DIFF_HEADER_LINE_LENGTH
                     )
     return lookup
 
@@ -196,7 +196,7 @@ def get_diagnostic_file_path(clang_tidy_diagnostic, build_dir):
 
     # Modern clang-tidy
     if ("DiagnosticMessage" in clang_tidy_diagnostic) and (
-        "FilePath" in clang_tidy_diagnostic["DiagnosticMessage"]
+            "FilePath" in clang_tidy_diagnostic["DiagnosticMessage"]
     ):
         file_path = clang_tidy_diagnostic["DiagnosticMessage"]["FilePath"]
         if file_path == "":
@@ -297,8 +297,8 @@ def collate_replacement_sets(diagnostic, offset_lookup):
             # First one starts a new group, always
             groups.append([replacement])
         elif (
-            replacement["LineNumber"] == groups[-1][-1]["LineNumber"]
-            or replacement["LineNumber"] - 1 == groups[-1][-1]["LineNumber"]
+                replacement["LineNumber"] == groups[-1][-1]["LineNumber"]
+                or replacement["LineNumber"] - 1 == groups[-1][-1]["LineNumber"]
         ):
             # Same or adjacent line to the last line in the last group
             # goes in the same group
@@ -330,11 +330,11 @@ def replace_one_line(replacement_set, line_num, offset_lookup):
 
         # Make sure to read any extra lines we need too
         for replacement_line_num in range(
-            replacement["LineNumber"], replacement["EndLineNumber"] + 1
+                replacement["LineNumber"], replacement["EndLineNumber"] + 1
         ):
             replacement_line_offset = offset_lookup[filename][replacement_line_num]
             source_lines[replacement_line_num] = (
-                read_one_line(filename, replacement_line_offset) + "\n"
+                    read_one_line(filename, replacement_line_offset) + "\n"
             )
 
     # Replacements might cross multiple lines, so squash them all together
@@ -486,7 +486,7 @@ def format_notes(notes, offset_lookup):
 
 
 def make_comment_from_diagnostic(
-    diagnostic_name, diagnostic, filename, offset_lookup, notes
+        diagnostic_name, diagnostic, filename, offset_lookup, notes
 ):
     """Create a comment from a diagnostic
 
@@ -528,7 +528,7 @@ def make_comment_from_diagnostic(
 
 
 def create_review_file(
-    clang_tidy_warnings, diff_lookup, offset_lookup, build_dir
+        clang_tidy_warnings, diff_lookup, offset_lookup, build_dir
 ) -> Optional[PRReview]:
     """Create a Github review from a set of clang-tidy diagnostics"""
 
@@ -609,14 +609,14 @@ def filter_files(diff, include: List[str], exclude: List[str]) -> List:
 
 
 def create_review(
-    diff_changes: str,
-    build_dir: str,
-    clang_tidy_checks: str,
-    clang_tidy_binary: str,
-    path_source: str,
-    config_file: str,
-    include: List[str],
-    exclude: List[str],
+        diff_changes: str,
+        build_dir: str,
+        clang_tidy_checks: str,
+        clang_tidy_binary: str,
+        path_source: str,
+        config_file: str,
+        include: List[str],
+        exclude: List[str],
 ) -> Optional[PRReview]:
     """Given the parameters, runs clang-tidy and creates a review.
     If no files were changed, or no warnings could be found, None will be returned.
@@ -714,7 +714,7 @@ def get_line_ranges(diff, files):
                     added_lines.append(line.target_line_no)
 
         for _, group in itertools.groupby(
-            enumerate(added_lines), lambda ix: ix[0] - ix[1]
+                enumerate(added_lines), lambda ix: ix[0] - ix[1]
         ):
             groups = list(map(itemgetter(1), group))
             lines_by_file.setdefault(filename.target_file[2:], []).append(
@@ -728,7 +728,7 @@ def get_line_ranges(diff, files):
 
 
 def convert_git_lab_changes_to_unidiff(
-    changes: List, path_source: str
+        changes: List, path_source: str
 ) -> List[unidiff.PatchSet]:
     """Use this function when the git remote type is equal to git lab.
     It is necessary because the changes format from API git lab is of the type unified
