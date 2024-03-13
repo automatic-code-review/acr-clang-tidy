@@ -1,5 +1,6 @@
-from clang_tidy_review import create_review
 import hashlib
+
+from clang_tidy_review import create_review
 
 
 def review(config):
@@ -46,9 +47,12 @@ def review(config):
 
 
 def __format_from_path_source_to_acr_processor(path_source: str, path: str):
+    print(f'acr-clang-tidy Format path source [PATH_SOURCE] {path_source} - [PATH_CLANG] {path}')
     result = path.replace(path_source, "")
     if result.startswith("/"):
         result = path[1:]
+
+    print(f'acr-clang-tidy Format path source [PATH_OUTPUT] {result}')
 
     return result
 
