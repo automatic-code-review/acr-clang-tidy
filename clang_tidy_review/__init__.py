@@ -366,7 +366,7 @@ def format_ordinary_line(source_line, line_offset):
     )
 
 
-def format_diff_line(diagnostic, offset_lookup, source_line, line_offset, line_num):
+def format_diff_line(diagnostic, offset_lookup, source_line, line_offset, line_num, path_root):
     """Format a replacement as a Github suggestion or diff block"""
 
     end_line = line_num
@@ -403,7 +403,8 @@ def format_diff_line(diagnostic, offset_lookup, source_line, line_offset, line_n
             new_line = whitespace.join([f"+ {line}" for line in new_line.splitlines()])
             old_line = whitespace.join([f"- {line}" for line in old_line.splitlines()])
 
-            rel_path = try_relative(replacement_set[0]["FilePath"])
+            rel_path = __format_from_path_source_to_acr_processor(path_root,
+                                                                  str(try_relative(replacement_set[0]["FilePath"])))
             code_blocks += textwrap.dedent(
                 f"""\
 
@@ -512,7 +513,7 @@ def make_comment_from_diagnostic(
 
     if diagnostic["Replacements"]:
         code_blocks, end_line = format_diff_line(
-            diagnostic, offset_lookup, source_line, line_offset, line_num
+            diagnostic, offset_lookup, source_line, line_offset, line_num, path_root
         )
     else:
         # No fixit, so just point at the problem
