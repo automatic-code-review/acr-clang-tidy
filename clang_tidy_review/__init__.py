@@ -549,10 +549,9 @@ def create_review_file(
 
         rel_path = str(try_relative(get_diagnostic_file_path(diagnostic, build_dir)))
         if rel_path not in diff_lookup:
-            diagnostic_message_description = diagnostic['Message']
             print(
                 f"WARNING: Skipping comment for file '{rel_path}' not in Diff changeset. "
-                f"Diagnostic message is:\n{diagnostic_message_description}"
+                f"Diagnostic message is:\n{diagnostic_message['Message']}"
             )
             continue
 
