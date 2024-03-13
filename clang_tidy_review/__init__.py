@@ -547,6 +547,14 @@ def create_review_file(
         if diagnostic_message["FilePath"] == "":
             continue
 
+        rel_path = str(try_relative(get_diagnostic_file_path(diagnostic, build_dir)))
+        if rel_path not in diff_lookup:
+            print(
+                f"WARNING: Skipping comment for file '{rel_path}' not in Diff changeset. "
+                f"Diagnostic message is:\n{diagnostic['Message']}"
+            )
+            continue
+
         comment_body, end_line = make_comment_from_diagnostic(
             diagnostic["DiagnosticName"],
             diagnostic_message,
@@ -555,7 +563,6 @@ def create_review_file(
             notes=diagnostic.get("Notes", []),
         )
 
-        rel_path = str(try_relative(get_diagnostic_file_path(diagnostic, build_dir)))
         # diff lines are 1-indexed
         source_line = 1 + find_line_number_from_offset(
             offset_lookup,
@@ -563,7 +570,7 @@ def create_review_file(
             diagnostic_message["FileOffset"],
         )
 
-        if rel_path not in diff_lookup or end_line not in diff_lookup[rel_path]:
+        if end_line not in diff_lookup[rel_path]:
             print(
                 f"WARNING: Skipping comment for file '{rel_path}' not in Diff changeset. Comment body is:\n{comment_body}"
             )
