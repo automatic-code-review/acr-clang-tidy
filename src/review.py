@@ -39,6 +39,7 @@ def review(config):
                         ),
                         "startInLine": comment["line"],
                         "endInLine": comment["line"],
+                        "snipset": False,
                     },
                 }
             )
