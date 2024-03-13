@@ -453,7 +453,7 @@ def fix_absolute_paths(build_compile_commands, base_dir):
         f.write(modified_compile_commands)
 
 
-def format_notes(notes, offset_lookup):
+def format_notes(notes, offset_lookup, path_root):
     """Format an array of notes into a single string"""
 
     code_blocks = ""
@@ -474,7 +474,9 @@ def format_notes(notes, offset_lookup):
             resolved_path, offset_lookup[resolved_path][line_num]
         )
 
-        path = try_relative(resolved_path)
+        path = str(try_relative(resolved_path)).replace(path_root, "")
+        if path.startswith("/"):
+            path = path[1:]
         message = f"**{path}:{line_num}:** {note['Message']}"
         code = format_ordinary_line(source_line, line_offset)
         code_blocks += f"{message}\n{code}"
@@ -486,7 +488,7 @@ def format_notes(notes, offset_lookup):
 
 
 def make_comment_from_diagnostic(
-        diagnostic_name, diagnostic, filename, offset_lookup, notes
+        diagnostic_name, diagnostic, filename, offset_lookup, notes, path_root
 ):
     """Create a comment from a diagnostic
 
@@ -518,7 +520,7 @@ def make_comment_from_diagnostic(
         # No fixit, so just point at the problem
         code_blocks = format_ordinary_line(source_line, line_offset)
 
-    code_blocks += format_notes(notes, offset_lookup)
+    code_blocks += format_notes(notes, offset_lookup, path_root)
 
     comment_body = (
         f"warning: {diagnostic['Message']} [{diagnostic_name}]\n{code_blocks}"
@@ -561,6 +563,7 @@ def create_review_file(
             get_diagnostic_file_path(diagnostic, build_dir),
             offset_lookup,
             notes=diagnostic.get("Notes", []),
+            path_root=build_dir,
         )
 
         # diff lines are 1-indexed
