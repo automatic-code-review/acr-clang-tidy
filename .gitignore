@@ -3,3 +3,5 @@ clang-tidy-review-output.json
 **__pycache__**
 .idea
 .vscode
+build/
+venv/
