@@ -333,9 +333,16 @@ def replace_one_line(replacement_set, line_num, offset_lookup):
                 replacement["LineNumber"], replacement["EndLineNumber"] + 1
         ):
             replacement_line_offset = offset_lookup[filename][replacement_line_num]
-            source_lines[replacement_line_num] = (
-                    read_one_line(filename, replacement_line_offset) + "\n"
-            )
+            line_read = read_one_line(filename, replacement_line_offset) + "\n"
+
+            line_already_exists = False
+            for source_line_value in source_lines.values():
+                if line_read in source_line_value:
+                    line_already_exists = True
+                    break
+
+            if not line_already_exists:
+                source_lines[replacement_line_num] = line_read
 
     # Replacements might cross multiple lines, so squash them all together
     source_line = "".join(source_lines.values()).rstrip("\n")
